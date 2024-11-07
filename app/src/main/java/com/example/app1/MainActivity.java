@@ -1,9 +1,13 @@
 package com.example.app1;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -14,10 +18,16 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
     String s ="检测开始";
+    String sc_myappkey = "4D:DD:19:7F:A2:A2:59:77:0F:F1:3A:EB:FE:DD:26:A4:C1:8A:80:AA";//自建密钥库签名
+    String sc_default = "5F:49:E9:F6:AC:16:31:F7:9A:77:7F:1A:15:06:EE:84:48:1D:4D:DF";//默认密钥库签名
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +42,11 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     rootCheck();
-                    signCheck();
+                    checkSign();
+
+                    startScheduledTask();
+                    setDailyAlarm();
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -51,14 +65,28 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 emulatorCheck();
-                signCheck();
+                checkSign();
 
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
                 intent.putExtra("s",s);
                 startActivity(intent);
 
                 s = "检测开始";
+            }
+        });
 
+        Button button3 = (Button)findViewById(R.id.button3);
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkFingrtPrint();
+                checkSign();
+
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                intent.putExtra("s",s);
+                startActivity(intent);
+
+                s = "检测开始";
             }
         });
 
@@ -69,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //-----------------------------------------------ROOT检测------------------------------------------------------
     public void rootCheck() throws IOException {
         boolean flag = false;
         //检查SU命令
@@ -144,9 +173,9 @@ public class MainActivity extends AppCompatActivity {
         s += ts;
 */
 
-
     }
 
+    //-----------------------------------------------模拟器检测------------------------------------------------------
     public void emulatorCheck(){
         boolean flag = false;
         Context context = this;
@@ -203,11 +232,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void signCheck(){
-        String sc_myappkey = "4D:DD:19:7F:A2:A2:59:77:0F:F1:3A:EB:FE:DD:26:A4:C1:8A:80:AA";//自建密钥库签名
-        String sc_default = "5F:49:E9:F6:AC:16:31:F7:9A:77:7F:1A:15:06:EE:84:48:1D:4D:DF";//默认密钥库签名
-        signcheck signCheck = new signcheck(this,sc_default);
-        if(signCheck.check()) {
+
+    //-----------------------------------------------签名检测------------------------------------------------------
+    public void checkSign(){
+        if(signCheck()) {
             //TODO 签名正常
             s += "\n\n签名校验成功";
         }else{
@@ -215,5 +243,72 @@ public class MainActivity extends AppCompatActivity {
             s += "\n\n签名校验失败";
         }
     }
+
+    public boolean signCheck(){
+        signcheck signCheck = new signcheck(this,sc_default);
+        return signCheck.check();
+    }
+
+
+    private ScheduledExecutorService scheduler;
+    public void startScheduledTask() {
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                signCheck();
+            }
+        }, 0, 15, TimeUnit.SECONDS);
+        Log.d("ScheduledTask", "signcheck executed");
+    }
+
+
+    private static int executionCount = 0;
+
+    public void setDailyAlarm() {
+
+        AlarmManager aManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, MyReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 24);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        long triggerTime = calendar.getTimeInMillis();
+        if (System.currentTimeMillis() > triggerTime) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            triggerTime = calendar.getTimeInMillis();
+        }
+        long intervalMillis = AlarmManager.INTERVAL_DAY; // 每天
+        aManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, intervalMillis, pendingIntent);
+    }
+
+    public class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // 通过上下文调用 signCheck 方法
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).signCheck();
+                System.out.println("setDailyAlarm");
+            }
+        }
+    }
+
+    //-----------------------------------------------设备指纹检测------------------------------------------------------
+    public void checkFingrtPrint(){
+        fingerprint fp = new fingerprint();
+        String dev =fp.getDeviceID(getContentResolver());
+        String net = fp.getNetId(this);
+        String sys = fp.getSystemProperties();
+        s += dev + net + sys;
+
+        fp.getAccounts(this);
+    }
+
+
+
 
 }

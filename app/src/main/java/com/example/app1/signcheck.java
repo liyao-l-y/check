@@ -119,7 +119,7 @@ public class signcheck {
     public boolean check() {
         if (this.realCer != null) {
             cer = cer.trim();
-            System.out.println(this.cer);
+            Log.d("signcheck", "校验成功");
             realCer = realCer.trim();
             if (this.cer.equals(this.realCer)) {
                 return true;
