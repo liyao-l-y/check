@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.Calendar;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -79,7 +80,13 @@ public class MainActivity extends AppCompatActivity {
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkFingrtPrint();
+                try {
+                    checkFingrtPrint();
+                } catch (SocketException e) {
+                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 checkSign();
 
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
@@ -298,14 +305,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //-----------------------------------------------设备指纹检测------------------------------------------------------
-    public void checkFingrtPrint(){
+    public void checkFingrtPrint() throws Exception {
         fingerprint fp = new fingerprint();
         String dev =fp.getDeviceID(getContentResolver());
-        String net = fp.getNetId(this);
+        String net = fp.getLocalMacAddress();
         String sys = fp.getSystemProperties();
         s += dev + net + sys;
 
         fp.getAccounts(this);
+
+        filewr fl = new filewr();
+        fl.bufferSave(s,"a.txt");
+        fl.bufferRead("a.txt");
     }
 
 

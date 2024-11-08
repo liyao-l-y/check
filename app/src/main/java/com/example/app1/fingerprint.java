@@ -6,13 +6,22 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class fingerprint {
@@ -57,54 +66,60 @@ public class fingerprint {
         return s;
     }
 
-    public String getNetId(Context context){
 
-        StringBuilder netId = new StringBuilder();
-        netId.append("\n网络:\n");
-
+    public String getLocalMacAddress() throws SocketException {
+        String Addr = "";
         try {
-            //wifi mac地址
-            WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            WifiInfo info = wifi.getConnectionInfo();
-            @SuppressLint("HardwareIds") String wifiMac = info.getMacAddress();
-
-            if(wifiMac != null){
-                netId.append("wifi：").append(wifiMac).append("\n");
-                Log.i("getwifiMac", wifiMac);
+            InetAddress ip = getLocalInetAddress();
+            System.out.println(ip);
+            Addr += "\n当前ip地址:" + ip.toString() + "\n";
+            byte[] b = NetworkInterface.getByInetAddress(ip).getHardwareAddress();
+            System.out.println(NetworkInterface.getByInetAddress(ip));
+            StringBuffer buffer = new StringBuffer();
+            for (int i = 0; i < b.length; i++) {
+                if (i != 0) {
+                    buffer.append(':');
+                }
+                String str = Integer.toHexString(b[i]&0xFF);
+                buffer.append(str.length() == 1 ? 0 + str : str);
             }
-
-            //IMEI（imei）
-            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            @SuppressLint("HardwareIds") String imei = tm.getDeviceId();
-            if(imei != null){
-                netId.append("imei:").append(imei).append("\n");
-                Log.i("getimei", imei);
-            }
-
-            //序列号（sn）
-            @SuppressLint("HardwareIds") String sn = tm.getSimSerialNumber();
-            if(sn != null){
-                netId.append("sn:").append(sn).append("\n");
-                Log.i("getsn", sn);
-            }
-
-            //如果上面都没有， 则生成一个id：随机码
-//		 	String uuid = getUUID(context);
-//			if(!isEmpty(uuid)){
-//				deviceId.append("id");
-//				deviceId.append(uuid);
-//				Log.e("getDeviceId : ", deviceId.toString());
-//				return deviceId.toString();
-//			}
-
+            Addr += "Mac地址:" + buffer.toString().toLowerCase() + "\n";
         } catch (Exception e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
-            //deviceId.append("id").append(getUUID(context));
         }
 
-        Log.i("getDeviceId : ", netId.toString());
+        return Addr;
+    }
 
-        return netId.toString();
+
+    protected InetAddress getLocalInetAddress() {
+        InetAddress ip = null;
+        try {
+            //列举
+            Enumeration en_netInterface = NetworkInterface.getNetworkInterfaces();
+            //避免多张网卡
+            while (en_netInterface.hasMoreElements()) {//是否还有元素
+                NetworkInterface ni = (NetworkInterface) en_netInterface.nextElement();//得到下一个元素
+                Enumeration en_ip = ni.getInetAddresses();//得到一个ip地址的列举
+                while (en_ip.hasMoreElements()) {
+                    ip = (InetAddress) en_ip.nextElement();
+                    System.out.println(ip);
+                    if (!ip.isLoopbackAddress() && ip instanceof java.net.Inet4Address)
+                        break;
+                    else
+                        ip = null;
+                }
+                System.out.println(ip);
+                if (ip != null) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+        return ip;
     }
 
 
@@ -145,6 +160,7 @@ public class fingerprint {
         AccountManager accountManager = AccountManager.get(context);
         Account[] accounts = accountManager.getAccounts();
         for (Account account : accounts) {
+            System.out.println(account);
             Log.d("AccountManager", "Account: " + account.name + " Type: " + account.type);
         }
     }
