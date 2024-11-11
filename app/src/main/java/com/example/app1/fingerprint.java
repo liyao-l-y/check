@@ -10,21 +10,18 @@ import android.provider.Settings;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class fingerprint {
+    //-----------------------------------------------设备------------------------------------------------------
     public  String getDeviceID(ContentResolver contentResolver) {
         String s = "设备指纹：\n";
         try {
@@ -66,13 +63,13 @@ public class fingerprint {
         return s;
     }
 
-
+    //-----------------------------------------------网络------------------------------------------------------
     public String getLocalMacAddress() throws SocketException {
-        String Addr = "";
+        String Addr = "网络地址：\n";
         try {
             InetAddress ip = getLocalInetAddress();
-            System.out.println(ip);
-            Addr += "\n当前ip地址:" + ip.toString() + "\n";
+            Addr += "当前ip地址:" + ip.toString() + "\n";
+            System.out.println("当前ip地址:" + ip);
             byte[] b = NetworkInterface.getByInetAddress(ip).getHardwareAddress();
             System.out.println(NetworkInterface.getByInetAddress(ip));
             StringBuffer buffer = new StringBuffer();
@@ -97,13 +94,13 @@ public class fingerprint {
         InetAddress ip = null;
         try {
             //列举
-            Enumeration en_netInterface = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> en_netInterface = NetworkInterface.getNetworkInterfaces();
             //避免多张网卡
             while (en_netInterface.hasMoreElements()) {//是否还有元素
-                NetworkInterface ni = (NetworkInterface) en_netInterface.nextElement();//得到下一个元素
-                Enumeration en_ip = ni.getInetAddresses();//得到一个ip地址的列举
+                NetworkInterface ni = en_netInterface.nextElement();//得到下一个元素
+                Enumeration<InetAddress> en_ip = ni.getInetAddresses();//得到一个ip地址的列举
                 while (en_ip.hasMoreElements()) {
-                    ip = (InetAddress) en_ip.nextElement();
+                    ip = en_ip.nextElement();
                     System.out.println(ip);
                     if (!ip.isLoopbackAddress() && ip instanceof java.net.Inet4Address)
                         break;
@@ -122,13 +119,13 @@ public class fingerprint {
         return ip;
     }
 
-
+    //-----------------------------------------------系统------------------------------------------------------
     public String getSystemProperties() {
         try {
-            Class<?> c = Class.forName("android.os.SystemProperties");
+            @SuppressLint("PrivateApi") Class<?> c = Class.forName("android.os.SystemProperties");
             Method get = c.getMethod("get", String.class);
 
-            StringBuilder s = new StringBuilder("\n系统:\n");
+            StringBuilder s = new StringBuilder("系统指纹:\n");
 
             String[] properties = {
                     "ro.build.fingerprint",

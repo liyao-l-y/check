@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    String s ="检测开始";
+    String s ="检测开始\n";
     String sc_myappkey = "4D:DD:19:7F:A2:A2:59:77:0F:F1:3A:EB:FE:DD:26:A4:C1:8A:80:AA";//自建密钥库签名
     String sc_default = "5F:49:E9:F6:AC:16:31:F7:9A:77:7F:1A:15:06:EE:84:48:1D:4D:DF";//默认密钥库签名
 
@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
         AlarmManager aManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, MyReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 24);
@@ -291,6 +291,10 @@ public class MainActivity extends AppCompatActivity {
         }
         long intervalMillis = AlarmManager.INTERVAL_DAY; // 每天
         aManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, intervalMillis, pendingIntent);
+
+        filewr fl = new filewr();
+        fl.bufferSave(String.valueOf(executionCount),"sc.txt");
+        fl.bufferRead("sc.txt");
     }
 
     public class MyReceiver extends BroadcastReceiver {
@@ -300,6 +304,8 @@ public class MainActivity extends AppCompatActivity {
             if (context instanceof MainActivity) {
                 ((MainActivity) context).signCheck();
                 System.out.println("setDailyAlarm");
+                executionCount += 1;
+
             }
         }
     }
