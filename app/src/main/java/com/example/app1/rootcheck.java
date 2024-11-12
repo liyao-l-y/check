@@ -125,13 +125,16 @@ public class rootcheck {
         return value;
     }
     //检测SELinux状态
-    public boolean checkSELinuxStatus() {
+    public String checkSELinuxStatus() {
         String selinuxStatus = getSELinuxStatus();
         System.out.println(selinuxStatus);
         if (selinuxStatus.equalsIgnoreCase("disabled") || selinuxStatus.equalsIgnoreCase("permissive")) {
-            return true; // SELinux处于禁用或宽松模式，可能是Root设备
+            return "y"; // SELinux处于禁用或宽松模式，可能是Root设备
+        }else {
+            if (selinuxStatus.equalsIgnoreCase("unknown"))
+                return "unknown";
         }
-        return false;
+        return "n";
     }
     //获取SELinux状态
     private String getSELinuxStatus() {

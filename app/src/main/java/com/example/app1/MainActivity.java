@@ -144,11 +144,13 @@ public class MainActivity extends AppCompatActivity {
             s += "\n检查系统属性:正常";
         }
         //检查SELinux
-        if (rc.checkSELinuxStatus()){
+        if (rc.checkSELinuxStatus().equalsIgnoreCase("y")){
             s += "\n检查SELinux状态:异常";
             flag = true;
-        }else {
+        } else if (rc.checkSELinuxStatus().equalsIgnoreCase("n")) {
             s += "\n检查SELinux状态:正常";
+        } else {
+            s += "\n检查SELinux状态:未知";
         }
         //检查bootloader
         if (rc.isBootloaderUnlocked()){
@@ -244,10 +246,10 @@ public class MainActivity extends AppCompatActivity {
     public void checkSign(){
         if(signCheck()) {
             //TODO 签名正常
-            s += "\n\n签名校验成功";
+            s += "\n签名校验成功";
         }else{
             //TODO 签名不正确
-            s += "\n\n签名校验失败";
+            s += "\n签名校验失败";
         }
     }
 
@@ -293,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
         aManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, intervalMillis, pendingIntent);
 
         filewr fl = new filewr();
-        fl.bufferSave(String.valueOf(executionCount),"sc.txt");
         fl.bufferRead("sc.txt");
     }
 
@@ -305,6 +306,9 @@ public class MainActivity extends AppCompatActivity {
                 ((MainActivity) context).signCheck();
                 System.out.println("setDailyAlarm");
                 executionCount += 1;
+
+                filewr fl = new filewr();
+                fl.bufferSave(String.valueOf(executionCount),"sc.txt");
 
             }
         }
