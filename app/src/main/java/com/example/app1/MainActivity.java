@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
@@ -18,7 +17,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.Calendar;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,65 +34,54 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        Button button1 = (Button)findViewById(R.id.button1);
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        Button button1 = findViewById(R.id.button1);
+        button1.setOnClickListener(view -> {
 
-                try {
-                    rootCheck();
-                    checkSign();
-
-                    startScheduledTask();
-                    setDailyAlarm();
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                intent.putExtra("s",s);
-                startActivity(intent);
-
-                s = "检测开始";
-            }
-        });
-
-        Button button2 = (Button)findViewById(R.id.button2);
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                emulatorCheck();
+            try {
+                rootCheck();
                 checkSign();
 
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                intent.putExtra("s",s);
-                startActivity(intent);
+                startScheduledTask();
+                setDailyAlarm();
 
-                s = "检测开始";
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("s",s);
+            startActivity(intent);
+
+            s = "检测开始";
         });
 
-        Button button3 = (Button)findViewById(R.id.button3);
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    checkFingrtPrint();
-                } catch (SocketException e) {
-                    throw new RuntimeException(e);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                checkSign();
+        Button button2 = findViewById(R.id.button2);
+        button2.setOnClickListener(view -> {
 
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                intent.putExtra("s",s);
-                startActivity(intent);
+            emulatorCheck();
+            checkSign();
 
-                s = "检测开始";
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("s",s);
+            startActivity(intent);
+
+            s = "检测开始";
+        });
+
+        Button button3 = findViewById(R.id.button3);
+        button3.setOnClickListener(view -> {
+            try {
+                checkFingerPrint();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
+            checkSign();
+
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("s",s);
+            startActivity(intent);
+
+            s = "检测开始";
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -161,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //检查TEE
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (rc.isDeviceLocked()){
+            if (rc.checkTEE()){
                 s += "\n检查TEE状态:正常";
 
             }else {
@@ -176,11 +163,6 @@ public class MainActivity extends AppCompatActivity {
         }else {
             s += "\n\n可能未root";
         }
-/*
-        test t = new test();
-        String ts = t.tf();
-        s += ts;
-*/
 
     }
 
@@ -259,15 +241,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private ScheduledExecutorService scheduler;
     public void startScheduledTask() {
-        scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                signCheck();
-            }
-        }, 0, 15, TimeUnit.SECONDS);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(this::signCheck, 0, 15, TimeUnit.SECONDS);
         Log.d("ScheduledTask", "signcheck executed");
     }
 
@@ -298,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
         fl.bufferRead("sc.txt");
     }
 
-    public class MyReceiver extends BroadcastReceiver {
+    public static class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             // 通过上下文调用 signCheck 方法
@@ -315,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //-----------------------------------------------设备指纹检测------------------------------------------------------
-    public void checkFingrtPrint() throws Exception {
+    public void checkFingerPrint() {
         fingerprint fp = new fingerprint();
         String dev =fp.getDeviceID(getContentResolver());
         String net = fp.getLocalMacAddress();
@@ -324,9 +300,9 @@ public class MainActivity extends AppCompatActivity {
 
         fp.getAccounts(this);
 
-        filewr fl = new filewr();
-        fl.bufferSave(s,"a.txt");
-        fl.bufferRead("a.txt");
+        //filewr fl = new filewr();
+        //fl.bufferSave(s,"a.txt");
+        //fl.bufferRead("a.txt");
     }
 
 

@@ -29,19 +29,15 @@ public class rootcheck {
     //检查SU命令能否执行
     public boolean checkSuCommand() {
         Process process = null;
-        Process process1 = null;
         try {
             // 尝试运行su命令
             process = Runtime.getRuntime().exec("which su" );
             BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = in.readLine();
             System.out.println(line);
-            if (line != null) {
-                return true; // su命令执行成功，可能被Root
-            }
-            return false;
+            return line != null; // su命令执行成功，可能被Root
         } catch (Exception e) {
-            System.out.println(e);
+            Log.w("checkSuCommandException", e.getMessage(),e);
             return false; // 执行su命令失败，可能未Root
         } finally {
             if (process != null) {
@@ -107,10 +103,7 @@ public class rootcheck {
         String secure = getSystemProperty("ro.secure");
         System.out.println("ro.debuggable:"+debuggable);
         System.out.println("ro.secure:"+secure);
-        if(debuggable.equals("1") || secure.equals("0")){
-            return true;
-        }
-        return false;
+        return debuggable.equals("1") || secure.equals("0");
     }
     //获取系统属性值。
     private String getSystemProperty(String key) {
@@ -120,7 +113,7 @@ public class rootcheck {
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             value = reader.readLine();
         } catch (Exception e) {
-            System.out.println(e);
+            Log.w("getSystemPropertyException", e.getMessage(),e);
         }
         return value;
     }
@@ -144,21 +137,19 @@ public class rootcheck {
             System.out.println(in.readLine());
             return in.readLine().trim(); // 返回SELinux的状态
         } catch (Exception e) {
-            System.out.println(e);
+            Log.w("getSELinuxStatusException", e.getMessage(),e);
             return "unknown"; // 检测失败
         }
     }
     //检测bootloader
-    public static final String TAG = "BootloaderChecker";
-    public static boolean isBootloaderUnlocked() {
+    public boolean isBootloaderUnlocked() {
         boolean isUnlocked = false;
-
         try {
             Process process = Runtime.getRuntime().exec("getprop ro.boot.verifiedbootstate");
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             if ((line = reader.readLine()) != null) {
-                Log.d(TAG, "Bootloader state: " + line);
+                Log.d("BootloaderChecker", "Bootloader state: " + line);
                 // "orange" 表示Bootloader解锁; "green" 表示Bootloader锁定
                 if ("orange".equalsIgnoreCase(line)) {
                     isUnlocked = true;
@@ -167,13 +158,13 @@ public class rootcheck {
             reader.close();
             process.waitFor();
         } catch (Exception e) {
-            Log.e(TAG, "Error checking bootloader status", e);
+            Log.w("BootloaderChecker", "Error checking bootloader status", e);
         }
         return isUnlocked;
     }
     //检测TEE状态
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    public boolean isDeviceLocked() {
+    public boolean checkTEE() {
         try {
             // 从 Android Keystore 中获取密钥
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
@@ -204,7 +195,7 @@ public class rootcheck {
                  InvalidKeySpecException | NoSuchProviderException |
                  InvalidAlgorithmParameterException | UnrecoverableEntryException |
                  java.security.KeyStoreException e) {
-            e.printStackTrace();
+            Log.w("checkTEEException", e.getMessage(),e);
             return false;
         }
     }

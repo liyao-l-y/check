@@ -1,13 +1,11 @@
 package com.example.app1;
 
-import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,7 +24,7 @@ public class filewr {
             }
             bfr.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.w("bufferSaveException", e.getMessage(),e);
         }
         // 将要写入的内容以换行符分割
         String[] newContentLines = msg.split("\n");
@@ -48,8 +46,8 @@ public class filewr {
             bfw.newLine();
             bfw.flush();
             bfw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException e1) {
+            Log.w("bufferSaveException", e1.getMessage(),e1);
         }
     }
 
@@ -66,9 +64,9 @@ public class filewr {
             }
             bfr.close();
 
-            Log.d("buffer", "bufferRead: " + sb.toString());
+            Log.d("buffer", "bufferRead: " + sb);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.w("bufferReadException", e.getMessage(),e);
         }
     }
 

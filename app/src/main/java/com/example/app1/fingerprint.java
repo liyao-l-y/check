@@ -10,13 +10,10 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,7 +32,7 @@ public class fingerprint {
             if (androidId != null)
                 s += "Android ID：" + androidId + "\n";
         } catch (Exception e) {
-            Log.e("DeviceFingerprint", "Error retrieving device fingerprint: " + e.getMessage());
+            Log.w("getDeviceIDException", e.getMessage(), e);
         }
 
         s += getUUID() + "\n";
@@ -62,7 +59,7 @@ public class fingerprint {
     }
 
     //-----------------------------------------------网络------------------------------------------------------
-    public String getLocalMacAddress() throws SocketException {
+    public String getLocalMacAddress() {
         String Addr = "网络地址：\n";
         try {
             InetAddress ip = getLocalInetAddress();
@@ -70,7 +67,7 @@ public class fingerprint {
             System.out.println("当前ip地址:" + ip);
             byte[] b = NetworkInterface.getByInetAddress(ip).getHardwareAddress();
             System.out.println(NetworkInterface.getByInetAddress(ip));
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (int i = 0; i < b.length; i++) {
                 if (i != 0) {
                     buffer.append(':');
@@ -81,7 +78,7 @@ public class fingerprint {
             Addr += "Mac地址:" + buffer.toString().toLowerCase() + "\n";
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.w("getLocalMacAddressException", e.getMessage(),e);
         }
 
         return Addr;
@@ -99,20 +96,17 @@ public class fingerprint {
                 Enumeration<InetAddress> en_ip = ni.getInetAddresses();//得到一个ip地址的列举
                 while (en_ip.hasMoreElements()) {
                     ip = en_ip.nextElement();
-                    System.out.println(ip);
                     if (!ip.isLoopbackAddress() && ip instanceof java.net.Inet4Address)
                         break;
                     else
                         ip = null;
                 }
-                System.out.println(ip);
                 if (ip != null) {
                     break;
                 }
             }
         } catch (Exception e) {
-
-            e.printStackTrace();
+            Log.w("getLocalInetAddressException", e.getMessage(),e);
         }
         return ip;
     }
@@ -127,8 +121,8 @@ public class fingerprint {
 
             String[] properties = {
                     "ro.build.fingerprint",
-                    //"ro.build.build.fingerprint",
-                    //"ro.bootimage.build.fingerprint",
+                    "ro.build.build.fingerprint",
+                    "ro.bootimage.build.fingerprint",
                     "ro.odm.build.fingerprint",
                     "ro.product.build.fingerprint",
                     "ro.system_ext.build.fingerprint",
@@ -148,7 +142,7 @@ public class fingerprint {
             }
             return s.toString();
         } catch (Exception e) {
-            Log.e("DeviceProperties", "Error retrieving system properties: " + e.getMessage());
+            Log.w("getSystemPropertiesException",  e.getMessage(), e);
         }
         return "系统属性获取失败";
 

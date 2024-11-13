@@ -15,10 +15,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 public class signcheck {
-    private Context context;
+    private final Context context;
     private String cer = null;
     private String realCer = null;
-    private static final String TAG = "SignCheck";
 
     public signcheck(Context context) {
         this.context = context;
@@ -54,9 +53,10 @@ public class signcheck {
             //获得包的所有内容信息类
             packageInfo = pm.getPackageInfo(packageName, flags);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.w("getCertificateSHA1FingerprintException", e.getMessage(),e);
         }
         //签名信息
+        assert packageInfo != null;
         Signature[] signatures = packageInfo.signatures;
         byte[] cert = signatures[0].toByteArray();
         //将签名转换为字节数组流
@@ -66,17 +66,18 @@ public class signcheck {
 
         try {
             cf = CertificateFactory.getInstance("X509");
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e1) {
+            Log.w("getCertificateSHA1FingerprintException", e1.getMessage(),e1);
         }
 
         //X509证书
         X509Certificate c = null;
 
         try {
+            assert cf != null;
             c = (X509Certificate) cf.generateCertificate(input);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e2) {
+            Log.w("getCertificateSHA1FingerprintException", e2.getMessage(),e2);
         }
 
         String hexString = null;
@@ -85,13 +86,12 @@ public class signcheck {
             //加密算法的类，这里的参数可以使 MD4,MD5 等加密算法
             MessageDigest md = MessageDigest.getInstance("SHA1");
             //获得公钥
+            assert c != null;
             byte[] publicKey = md.digest(c.getEncoded());
             //字节到十六进制的格式转换
             hexString = byte2HexFormatted(publicKey);
-        } catch (NoSuchAlgorithmException e1) {
-            e1.printStackTrace();
-        } catch (CertificateEncodingException e) {
-            e.printStackTrace();
+        } catch (NoSuchAlgorithmException | CertificateEncodingException e3) {
+            Log.w("getCertificateSHA1FingerprintException", e3.getMessage(),e3);
         }
         return hexString;
     }
@@ -121,11 +121,9 @@ public class signcheck {
             cer = cer.trim();
             Log.d("signcheck", "校验成功");
             realCer = realCer.trim();
-            if (this.cer.equals(this.realCer)) {
-                return true;
-            }
+            return this.cer.equals(this.realCer);
         }else {
-            Log.e(TAG, "未给定真实的签名 SHA-1 值");
+            Log.w("signcheck", "未给定真实的签名 SHA-1 值");
         }
         return false;
     }

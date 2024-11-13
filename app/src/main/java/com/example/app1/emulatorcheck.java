@@ -63,10 +63,7 @@ public class emulatorcheck {
     }
     //检查系统架构
     public  boolean checkArchitecture(){
-        if (Build.CPU_ABI.contains("x86")) {
-            return true;
-        }
-        return false;
+        return Build.CPU_ABI.contains("x86");
     }
     //检查电池状态
     public boolean checkBattery(Context context) {
@@ -80,9 +77,7 @@ public class emulatorcheck {
             System.out.println(batteryPct);
             boolean isCharging = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1) == BatteryManager.BATTERY_STATUS_CHARGING;
             // 判断电池电量和充电状态，通常模拟器电池满电且不在充电
-            if (batteryPct == 80.0 && !isCharging) {
-                return true; // 可能在模拟器中
-            }
+            return batteryPct == 80.0 && !isCharging; // 可能在模拟器中
         }
         return false; // 不在模拟器中
     }
