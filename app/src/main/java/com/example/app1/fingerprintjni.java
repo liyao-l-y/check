@@ -1,6 +1,6 @@
 package com.example.app1;
 
-public class fingerprint_jni {
+public class fingerprintjni {
 
     static {
         System.loadLibrary("app1");

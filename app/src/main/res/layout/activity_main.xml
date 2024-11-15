@@ -22,6 +22,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/设备指纹检测"/>
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native检测方法"/>
 
 
 </LinearLayout>

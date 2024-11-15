@@ -1,5 +1,6 @@
 package com.example.app1;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button button3 = findViewById(R.id.button3);
         button3.setOnClickListener(view -> {
+
             try {
                 checkFingerPrint();
             } catch (Exception e) {
@@ -83,6 +85,22 @@ public class MainActivity extends AppCompatActivity {
 
             s = "检测开始";
         });
+
+        Button button4 = findViewById(R.id.button4);
+        button4.setOnClickListener(view -> {
+
+            fingerprintjni();
+
+            checkSign();
+
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("s",s);
+            startActivity(intent);
+
+            s = "检测开始";
+        });
+
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -305,7 +323,12 @@ public class MainActivity extends AppCompatActivity {
         //fl.bufferRead("a.txt");
     }
 
-
+    //-----------------------------------------------native检测方法------------------------------------------------------
+    public void fingerprintjni(){
+        fingerprintjni j = new fingerprintjni();
+        String js = j.fingerprint();
+        System.out.println(js);
+    }
 
 
 }

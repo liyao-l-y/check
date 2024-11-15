@@ -19,3 +19,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <jni.h>
+
+extern "C";
+JNIEXPORT jstring JNICALLJava_com_example_app1_fingerprintjni_fingerprint(JNIEnv *env, jobject thiz) {
+
+    // TODO: implement fingerprint()
+    return env->NewStringUTF("text");
+}
