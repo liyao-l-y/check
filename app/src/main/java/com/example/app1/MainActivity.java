@@ -1,6 +1,5 @@
 package com.example.app1;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -34,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
+//------------------------------------------Root检测---------------------------------------------------
         Button button1 = findViewById(R.id.button1);
         button1.setOnClickListener(view -> {
 
@@ -55,29 +54,36 @@ public class MainActivity extends AppCompatActivity {
 
             s = "检测开始";
         });
-
+//------------------------------------------模拟器检测---------------------------------------------------
         Button button2 = findViewById(R.id.button2);
         button2.setOnClickListener(view -> {
 
             emulatorCheck();
             checkSign();
 
+            startScheduledTask();
+            setDailyAlarm();
+
             Intent intent = new Intent(MainActivity.this, MainActivity2.class);
             intent.putExtra("s",s);
             startActivity(intent);
 
             s = "检测开始";
         });
-
+//------------------------------------------指纹检测---------------------------------------------------
         Button button3 = findViewById(R.id.button3);
         button3.setOnClickListener(view -> {
 
             try {
                 checkFingerPrint();
+                checkSign();
+
+                startScheduledTask();
+                setDailyAlarm();
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            checkSign();
 
             Intent intent = new Intent(MainActivity.this, MainActivity2.class);
             intent.putExtra("s",s);
@@ -85,13 +91,15 @@ public class MainActivity extends AppCompatActivity {
 
             s = "检测开始";
         });
-
+//------------------------------------------native检测---------------------------------------------------
         Button button4 = findViewById(R.id.button4);
         button4.setOnClickListener(view -> {
 
-            fingerprintjni();
+            //fingerprintjni();
 
             checkSign();
+            startScheduledTask();
+            setDailyAlarm();
 
             Intent intent = new Intent(MainActivity.this, MainActivity2.class);
             intent.putExtra("s",s);
@@ -99,7 +107,21 @@ public class MainActivity extends AppCompatActivity {
 
             s = "检测开始";
         });
+//------------------------------------------历史记录---------------------------------------------------
+        Button button5 = findViewById(R.id.button5);
+        button5.setOnClickListener(view -> {
 
+            filewr fl = new filewr();
+            String fr = fl.bufferRead("a.txt");
+
+            checkSign();
+            startScheduledTask();
+            setDailyAlarm();
+
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("s",fr);
+            startActivity(intent);
+        });
 
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -317,10 +339,6 @@ public class MainActivity extends AppCompatActivity {
         s += dev + net + sys;
 
         fp.getAccounts(this);
-
-        //filewr fl = new filewr();
-        //fl.bufferSave(s,"a.txt");
-        //fl.bufferRead("a.txt");
     }
 
     //-----------------------------------------------native检测方法------------------------------------------------------

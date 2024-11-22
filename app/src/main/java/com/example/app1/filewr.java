@@ -51,7 +51,7 @@ public class filewr {
         }
     }
 
-    public void bufferRead(String filename) {
+    public String bufferRead(String filename) {
         File file = new File(Environment.getExternalStorageDirectory().getPath(),filename);
         try {
             BufferedReader bfr = new BufferedReader(new FileReader(file));
@@ -65,9 +65,11 @@ public class filewr {
             bfr.close();
 
             Log.d("buffer", "bufferRead: " + sb);
+            return sb.toString();
         } catch (IOException e) {
             Log.w("bufferReadException", e.getMessage(),e);
         }
+        return "读取失败";
     }
 
     
