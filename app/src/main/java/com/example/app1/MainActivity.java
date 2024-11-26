@@ -280,7 +280,6 @@ public class MainActivity extends AppCompatActivity {
         return signCheck.check();
     }
 
-
     public void startScheduledTask() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleWithFixedDelay(this::signCheck, 0, 15, TimeUnit.SECONDS);

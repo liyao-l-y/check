@@ -13,7 +13,6 @@ import java.io.IOException;
 public class filewr {
     public void bufferSave(String msg,String filename) {
         File file = new File(Environment.getExternalStorageDirectory().getPath(),filename);
-
         // 先读取原有内容
         StringBuilder originalContent = new StringBuilder();
         try {

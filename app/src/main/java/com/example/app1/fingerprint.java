@@ -84,7 +84,6 @@ public class fingerprint {
         return Addr;
     }
 
-
     protected InetAddress getLocalInetAddress() {
         InetAddress ip = null;
         try {
