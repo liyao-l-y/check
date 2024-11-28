@@ -19,10 +19,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <jni.h>
+#include "com_example_app1_fingerprintjni.h"
 
-extern "C";
-JNIEXPORT jstring JNICALLJava_com_example_app1_fingerprintjni_fingerprint(JNIEnv *env, jobject thiz) {
-
-    // TODO: implement fingerprint()
-    return env->NewStringUTF("text");
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_example_app1_fingerprintjni_fingerprint(JNIEnv *env, jobject){
+    char *text = "I am from c";
+    return (*env).NewStringUTF(text);
 }

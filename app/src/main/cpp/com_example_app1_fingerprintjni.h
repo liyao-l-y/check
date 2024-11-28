@@ -20,8 +20,3 @@ JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_fingerprint
 #endif
 #endif
 
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_example_app1_fingerprintjni_fingerprint(JNIEnv *env, jobject thiz) {
-    // TODO: implement fingerprint()
-}

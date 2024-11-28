@@ -95,7 +95,8 @@ public class MainActivity extends AppCompatActivity {
         Button button4 = findViewById(R.id.button4);
         button4.setOnClickListener(view -> {
 
-            //fingerprintjni();
+            String fj = fingerprintjni();
+            s += fj + "\n";
 
             checkSign();
             startScheduledTask();
@@ -341,10 +342,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //-----------------------------------------------native检测方法------------------------------------------------------
-    public void fingerprintjni(){
+    public String fingerprintjni(){
         fingerprintjni j = new fingerprintjni();
         String js = j.fingerprint();
         System.out.println(js);
+        return js;
     }
 
 
