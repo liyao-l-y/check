@@ -73,3 +73,5 @@ Java_com_example_app1_fingerprintjni_fingerprint(JNIEnv *env, jobject){
 
     return jResult; // 返回合并后的字符串
 }
+
+

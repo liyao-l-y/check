@@ -91,6 +91,28 @@ public class MainActivity extends AppCompatActivity {
 
             s = "检测开始";
         });
+//------------------------------------------hook检测---------------------------------------------------
+        Button button6 = findViewById(R.id.button6);
+        button6.setOnClickListener(view -> {
+
+            try {
+                String h = checkfrida();
+                s += h;
+                checkSign();
+
+                startScheduledTask();
+                setDailyAlarm();
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("s",s);
+            startActivity(intent);
+
+            s = "检测开始";
+        });
 //------------------------------------------native检测---------------------------------------------------
         Button button4 = findViewById(R.id.button4);
         button4.setOnClickListener(view -> {
@@ -349,5 +371,13 @@ public class MainActivity extends AppCompatActivity {
         return js;
     }
 
-
+    //-----------------------------------------------native检测方法------------------------------------------------------
+    public String checkfrida(){
+        hookcheck hc = new hookcheck();
+        String h = "未检测到frida";
+        if(hc.hasReadProcMaps("frida")){
+            h = "检测到frida";
+        }
+        return h;
+    }
 }
