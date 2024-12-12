@@ -8,4 +8,6 @@ public class fingerprintjni {
 
     public native String fingerprint();
 
+    public native String check();
+
 }

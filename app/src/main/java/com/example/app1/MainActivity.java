@@ -367,17 +367,20 @@ public class MainActivity extends AppCompatActivity {
     public String fingerprintjni(){
         fingerprintjni j = new fingerprintjni();
         String js = j.fingerprint();
+        //String cs = j.check();
         System.out.println(js);
         return js;
     }
 
-    //-----------------------------------------------native检测方法------------------------------------------------------
+    //-----------------------------------------------hook检测方法------------------------------------------------------
     public String checkfrida(){
         hookcheck hc = new hookcheck();
         String h = "未检测到frida";
         if(hc.hasReadProcMaps("frida")){
             h = "检测到frida";
         }
+        if(hc.mCheckFridaTcp())
+            h = "检测到frida";
         return h;
     }
 }

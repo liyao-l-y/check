@@ -15,8 +15,15 @@ extern "C" {
 JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_fingerprint
   (JNIEnv *, jobject);
 
+/*
+ * Class:     com_example_app1_fingerprintjni
+ * Method:    check
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_check
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif
 #endif
-
