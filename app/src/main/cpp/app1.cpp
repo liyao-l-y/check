@@ -122,15 +122,18 @@ Java_com_example_app1_fingerprintjni_fingerprint(JNIEnv *env, jobject thiz){
     return jResult; // 返回合并后的字符串
 }
 
-JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_check(JNIEnv *, jobject){
+JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_check(JNIEnv *env, jobject){
+
+    const char* result1 = "检测到frida服务器端口";
+    const char* result2 = "未检测到frida服务器端口";
+
     struct sockaddr_in sa{};
     // 创建一个socket文件描述符
     int sock;
     // 定义一个字符数组res，用于存储接收到的数据
     char res[7];
-
-    // 循环遍历所有可能的端口号，从0到65535
-    for(int i = 0; i <= 65535; i++) {
+    // 循环遍历所有可能的端口号
+    for(int i = 27042; i <= 27042; i++) {
         // 创建一个新的socket连接
         sock = socket(AF_INET, SOCK_STREAM, 0);
         // 设置socket地址结构体的端口号
@@ -153,14 +156,46 @@ JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_check(JNIEnv *, j
                 if (strcmp(res, "REJECT") == 0) {
                     // 如果是，关闭socket并返回true，表示检测到了Frida服务器
                     close(sock);
-                    return (jstring) "检测到frida"; // Frida server detected
+                    jstring jResult = (*env).NewStringUTF(result1);
+                    return jResult; // Frida server detected
                 }
             }
         }
         // 如果当前端口连接失败或没有检测到Frida服务器，关闭socket
         close(sock);
     }
-    // 如果遍历完所有端口都没有检测到Frida服务器，返回false
-    return (jstring) "未检测到frida"; // No Frida server detected
+    // 如果遍历完所有端口都没有检测到Frida服务器
+    jstring jResult = (*env).NewStringUTF(result2);
+    return jResult; // No Frida server detected
+};
 
+JNIEXPORT jstring JNICALL Java_com_example_app1_fingerprintjni_mapscheck(JNIEnv * env, jobject){
+    char line[512];
+    const char* result1 = "检测到frida特征文件";
+    const char* result2 = "未检测到frida特征文件";
+    const char* result3 = "系统状态异常";
+    // 打开当前进程的内存映射文件/proc/self/maps进行读取
+    FILE* fp = fopen("/proc/self/maps", "r");
+    if (fp) {
+        // 如果文件成功打开，循环读取每一行
+        while (fgets(line, sizeof(line), fp)) {
+            // 使用strstr函数检查当前行是否包含"frida"字符串
+            if (strstr(line, "frida") || strstr(line, "gadget")) {
+                // 如果找到了"frida"，关闭文件并返回true，表示检测到了恶意库
+                fclose(fp);
+                jstring jResult = (*env).NewStringUTF(result1);
+                return jResult; // Evil library is loaded.
+            }
+        }
+        // 遍历完文件后，关闭文件
+        fclose(fp);
+    } else {
+        //如果无法打开文件，记录错误。这可能意味着系统状态异常
+        //没有处理错误
+        jstring jResult = (*env).NewStringUTF(result3);
+        return jResult;
+    }
+    // 如果没有在内存映射文件中找到"frida"，表示没有检测到恶意库
+    jstring jResult = (*env).NewStringUTF(result2);
+    return jResult; // No evil library detected.
 };

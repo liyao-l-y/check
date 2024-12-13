@@ -366,10 +366,12 @@ public class MainActivity extends AppCompatActivity {
     //-----------------------------------------------native检测方法------------------------------------------------------
     public String fingerprintjni(){
         fingerprintjni j = new fingerprintjni();
-        String js = j.fingerprint();
-        //String cs = j.check();
-        System.out.println(js);
-        return js;
+        StringBuilder s = new StringBuilder();
+        String js = j.fingerprint() + "\n";
+        String cs = j.check() + "\n";
+        String ms = j.mapscheck() + "\n";
+        s.append(js).append(cs).append(ms);
+        return s.toString();
     }
 
     //-----------------------------------------------hook检测方法------------------------------------------------------

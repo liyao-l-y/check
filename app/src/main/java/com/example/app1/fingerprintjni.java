@@ -10,4 +10,6 @@ public class fingerprintjni {
 
     public native String check();
 
+    public native String mapscheck();
+
 }
